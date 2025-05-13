@@ -1,18 +1,73 @@
-import React, { useState, useRef } from "react";
-import { useChat } from "../../Context/ChatContext";
-import socket from "../../Socket/socket";
-import { Smile, Paperclip } from "lucide-react";
-import Picker from "@emoji-mart/react";
+import React, { useRef, useState } from "react";
+import { Paperclip, Smile, Send } from "lucide-react";
 import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
+import socket from "../../Socket/socket";
+import { useChat } from "../../Context/ChatContext";
 
-function MessageInput({ currentUserId, receiverId, currentUserRole = "Patient" }) {
-  const { setMessages } = useChat();
+const MessageInput = ({ currentUserId, currentUserRole, receiverId }) => {
   const [newMessage, setNewMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef(null);
 
-  const handleSend = async () => {
-    if (newMessage.trim() === "") return;
+  const { messages, setMessages } = useChat(); // ✅ fixed: messages was undefined
+
+  const handleEmojiSelect = (emoji) => {
+    setNewMessage((prev) => prev + emoji.native);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = reader.result;
+
+      const messagePayload = {
+        doctorId: currentUserRole === "Patient" ? receiverId : currentUserId,
+        patientId: currentUserRole === "Patient" ? currentUserId : receiverId,
+        senderId: currentUserId,
+        senderModel: currentUserRole,
+        type: file.type.includes("pdf") ? "file" : "image",
+        fileData: base64,
+        fileName: file.name,
+        timestamp: new Date(),
+      };
+
+      await sendMessage(messagePayload);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const sendMessage = async (payload) => {
+    try {
+      const res = await fetch("http://localhost:5000/api/chat/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        const roomId = [String(payload.doctorId), String(payload.patientId)].sort().join("_");
+        socket.emit("send-message", payload);
+
+        // ✅ Prevent duplicates
+        const newMessages = data.messages.filter(
+          (msg) => !messages.some((m) => m._id === msg._id)
+        );
+
+        setMessages((prev) => [...prev, ...newMessages]);
+        setNewMessage("");
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
+  };
+
+  const handleSend = () => {
+    if (!newMessage.trim()) return;
 
     const messagePayload = {
       doctorId: currentUserRole === "Patient" ? receiverId : currentUserId,
@@ -24,77 +79,15 @@ function MessageInput({ currentUserId, receiverId, currentUserRole = "Patient" }
       timestamp: new Date(),
     };
 
-    try {
-      const res = await fetch("http://localhost:5000/api/chat/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(messagePayload),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        socket.emit("send-message", messagePayload);
-        setMessages((prev) => [...prev, ...data.messages.slice(prev.length)]); // Append only new
-        setNewMessage("");
-      }
-    } catch (err) {
-      console.error("❌ Error sending message:", err);
-    }
-  };
-
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async () => {
-      const fileMessage = {
-        doctorId: currentUserRole === "Patient" ? receiverId : currentUserId,
-        patientId: currentUserRole === "Patient" ? currentUserId : receiverId,
-        senderId: currentUserId,
-        senderModel: currentUserRole,
-        type: file.type.startsWith("image/") ? "image" : "file",
-        fileName: file.name,
-        fileData: reader.result,
-        timestamp: new Date(),
-      };
-
-      try {
-        const res = await fetch("http://localhost:5000/api/chat/send", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(fileMessage),
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          socket.emit("send-message", fileMessage);
-          setMessages((prev) => [...prev, ...data.messages.slice(prev.length)]);
-        }
-      } catch (err) {
-        console.error("❌ Error sending file:", err);
-      }
-    };
-
-    reader.readAsDataURL(file);
-    e.target.value = "";
-  };
-
-  const handleEmojiSelect = (emoji) => {
-    setNewMessage((prev) => prev + emoji.native);
-    setShowEmojiPicker(false);
+    sendMessage(messagePayload);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSend();
-    }
+    if (e.key === "Enter") handleSend();
   };
 
   return (
     <div className="w-full bg-white p-3 relative z-10">
-      {/* Emoji Picker */}
       {showEmojiPicker && (
         <div className="absolute bottom-16 left-10 z-30 scale-75 origin-bottom-left">
           <Picker data={data} onEmojiSelect={handleEmojiSelect} theme="light" />
@@ -130,14 +123,14 @@ function MessageInput({ currentUserId, receiverId, currentUserRole = "Patient" }
         />
 
         <button
-          className="ml-3 flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-full text-sm"
           onClick={handleSend}
+          className="w-10 h-10 flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white rounded-full"
         >
-          Send
+          <Send size={18} />
         </button>
       </div>
     </div>
   );
-}
+};
 
 export default MessageInput;

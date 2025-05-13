@@ -1,101 +1,107 @@
 import React, { useEffect, useState } from "react";
-import { Video, Phone } from "lucide-react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faComment } from "@fortawesome/free-solid-svg-icons";
 import ChatWindow from "../../Components/ChatWindow";
 import { fetchDoctorMessages } from "../../Components/Chat/chatApi";
 import ChatProvider from "../../Context/ChatContext";
 import { jwtDecode } from "jwt-decode";
+import socket from "../../Socket/socket";
 
 const DoctorChat = () => {
   const [doctorId, setDoctorId] = useState(null);
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      const decoded = jwtDecode(token);
-      setDoctorId(decoded.id);
+      try {
+        const decoded = jwtDecode(token);
+        const authDoctorId = decoded.id;
+
+        const fetchProfile = async () => {
+          try {
+            const res = await fetch(`http://localhost:5000/api/chat/get-doctor/${authDoctorId}`);
+            const data = await res.json();
+            if (data.success) {
+              setDoctorId(data.doctor._id);
+            }
+          } catch (err) {
+            console.error("Error fetching doctor profile:", err);
+          }
+        };
+
+        fetchProfile();
+      } catch (err) {
+        console.error("Token decode error:", err);
+      }
     }
   }, []);
 
   useEffect(() => {
     const loadPatients = async () => {
+      if (!doctorId) return;
       try {
-        setLoading(true);
         const data = await fetchDoctorMessages(doctorId);
-        if (data.success) setPatients(data.patients);
+        if (data.success) {
+          setPatients(data.patients);
+        }
       } catch (err) {
         console.error("Error loading patients:", err);
-      } finally {
-        setLoading(false);
       }
     };
-    if (doctorId) loadPatients();
+    loadPatients();
   }, [doctorId]);
 
-  return (
-    <div className="flex h-screen bg-gray-100">
-      <aside className="w-[300px] bg-white border-r border-gray-400 shadow-lg h-screen sticky top-0 overflow-y-auto">
-        <div className="flex items-center gap-2 p-4 text-xl font-bold text-gray-600">
-          <FontAwesomeIcon icon={faComment} className="text-gray-600" />
-          My Chats
-        </div>
-        {loading ? (
-          <div className="p-4 text-sm text-gray-500">Loading patients...</div>
-        ) : patients.length === 0 ? (
-          <div className="p-4 text-sm text-gray-500">No chats available yet.</div>
-        ) : (
-          <ul>
-            {patients.map((pat) => (
-              <li
-                key={pat._id}
-                onClick={() => setSelectedPatient(pat)}
-                className={`flex items-center gap-3 p-4 cursor-pointer hover:bg-blue-50 transition ${
-                  selectedPatient?._id === pat._id ? "bg-blue-100" : ""
-                }`}
-              >
-                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-gray-600">
-                  {pat.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-gray-800">{pat.name}</h4>
-                  <p className="text-xs text-gray-500">{pat.latestMessage || "Start chatting..."}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </aside>
+  useEffect(() => {
+    if (doctorId && patients.length > 0) {
+      patients.forEach((pat) => {
+        const roomId = [String(doctorId), String(pat._id)].sort().join("_");
+        socket.emit("join-room", {
+          doctorId: String(doctorId),
+          patientId: String(pat._id),
+        });
+      });
+    }
+  }, [doctorId, patients]);
 
-      <main className="flex-1 bg-white flex flex-col">
-        {selectedPatient && doctorId ? (
-          <ChatProvider doctorId={doctorId} patientId={selectedPatient._id}>
-            <div className="sticky top-0 z-10 flex items-center justify-between p-4 bg-gray-200 shadow-md border-b">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-sm font-bold text-white">
-                  {selectedPatient.name?.charAt(0).toUpperCase()}
-                </div>
-                <div>
-                  <h2 className="text-sm font-semibold text-gray-800">{selectedPatient.name}</h2>
-                  <p className="text-xs text-gray-500">Online</p>
-                </div>
-              </div>
-              <div className="flex gap-3 text-blue-500">
-                <Phone className="cursor-pointer" />
-                <Video className="cursor-pointer" />
-              </div>
-            </div>
-            <ChatWindow doctorId={doctorId} patientId={selectedPatient._id} senderRole="DocProfile" />
-          </ChatProvider>
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <h2 className="text-2xl font-bold text-blue-600 mb-6">Chat with Patients</h2>
+
+      {/* Patient list (no sidebar) */}
+      <div className="flex flex-wrap gap-4 mb-6">
+        {patients.length === 0 ? (
+          <p className="text-gray-500">No messages from patients yet.</p>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
-            Select a patient to start chatting.
-          </div>
+          patients.map((pat) => (
+            <button
+              key={pat._id}
+              onClick={() => setSelectedPatient(pat)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                selectedPatient?._id === pat._id
+                  ? "bg-blue-600 text-white"
+                  : "bg-white border border-gray-300 text-gray-700 hover:bg-blue-100"
+              }`}
+            >
+              {pat.name}
+            </button>
+          ))
         )}
-      </main>
+      </div>
+
+      {/* Chat area */}
+      {selectedPatient ? (
+        <div className="bg-white rounded-lg shadow-md border border-gray-200">
+          <ChatProvider doctorId={doctorId} patientId={selectedPatient._id}>
+            <ChatWindow
+              doctorId={doctorId}
+              patientId={selectedPatient._id}
+              senderRole="DocProfile"
+            />
+          </ChatProvider>
+        </div>
+      ) : (
+        <p className="text-gray-400 text-center">Select a patient to start chatting.</p>
+      )}
     </div>
   );
 };

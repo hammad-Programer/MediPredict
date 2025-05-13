@@ -11,6 +11,7 @@ const OTPSchema = new mongoose.Schema({
   tempUser: {
     username: { type: String },
     hashedPassword: { type: String },
+    role: { type: String }, // ✅ Add this line
   },
 });
 

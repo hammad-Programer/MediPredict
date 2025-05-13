@@ -8,10 +8,17 @@ const bookAppointment = async (req, res) => {
   const { doctorId, patientId, appointmentDate, appointmentTime } = req.body;
 
   try {
+    // ✅ Fetch doctor and patient from DB
     const doctor = await DoctorProfile.findById(doctorId);
     const patient = await Patient.findById(patientId);
 
-    // ✅ Check for missing doctor or patient
+    // ✅ Debug logs
+    console.log("🧾 Request Body:", req.body);
+    console.log("👨‍⚕️ Doctor found:", doctor?.name);
+    console.log("👤 Patient found:", patient);
+    console.log("📝 Patient username for message:", patient?.username);
+
+    // ✅ Validation
     if (!doctor) {
       return res
         .status(404)
@@ -34,14 +41,17 @@ const bookAppointment = async (req, res) => {
 
     console.log("📌 Appointment saved:", appointment);
 
+    // ✅ Create welcome message using patient.username
     const welcomeMessage = {
       senderId: doctor._id,
       senderModel: "DocProfile",
-      text: `Hello ${patient.name}, your appointment on ${appointmentDate} at ${appointmentTime} has been successfully confirmed. We will notify you closer to the scheduled time you selected. Thank you for choosing our services.`,
+      text: `Hello ${
+        patient?.username || "Guest"
+      }, your appointment on ${appointmentDate} at ${appointmentTime} has been successfully confirmed. We will notify you closer to the scheduled time you selected. Thank you for choosing our services.`,
       timestamp: new Date(),
     };
 
-    // ✅ Create or update chat
+    // ✅ Create or update chat thread
     let chat = await Chat.findOne({ doctorId, patientId });
 
     if (!chat) {
@@ -55,7 +65,7 @@ const bookAppointment = async (req, res) => {
       await chat.save();
     }
 
-    // ✅ Emit message to the room
+    // ✅ Emit real-time message to room
     const roomId = [doctorId.toString(), patientId.toString()].sort().join("_");
     console.log("📢 Emitting welcome message to room:", roomId);
 

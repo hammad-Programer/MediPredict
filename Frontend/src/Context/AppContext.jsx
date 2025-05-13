@@ -133,32 +133,47 @@ export const AppProvider = ({ children }) => {
   };
 
   // ✅ Doctor Login
-  const doctorLogin = async (credentials) => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await axios.post(`${BASE_URL1}/doctors/login`, credentials);
-      const { token, id, username, email } = res.data.doctor;
-  
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("doctorId", id); // ✅ Save doctorId
-        setUser({ id, username, email, role: "doctor" });
-        setLoading(false);
-        return res.data;
-      } else {
-        throw new Error("Token not received");
-      }
-    } catch (err) {
-      const errorMsg = err.response?.data?.msg || "Invalid doctor login credentials.";
-      setLoading(false);
-      setError(errorMsg);
-      return { error: errorMsg };
-    }
-  };
-  
-  
+ const doctorLogin = async (credentials) => {
+  setLoading(true);
+  setError("");
 
+  try {
+    const res = await axios.post(`${BASE_URL1}/doctors/login`, credentials);
+
+    // Ensure both token and doctor are present
+    const { token, doctor } = res.data;
+
+    if (token && doctor) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("doctorId", doctor.id);
+      setUser({
+        id: doctor.id,
+        username: doctor.username,
+        email: doctor.email,
+        role: "doctor",
+      });
+      setLoading(false);
+      return {
+        success: true,
+        doctor,
+        token,
+      };
+    } else {
+      setLoading(false);
+      return {
+        success: false,
+        error: "Invalid server response",
+      };
+    }
+  } catch (err) {
+    const errorMsg = err.response?.data?.msg || "Invalid doctor login credentials.";
+    setLoading(false);
+    setError(errorMsg);
+    return { success: false, error: errorMsg };
+  }
+};
+
+  
   // ✅ Contact Message
   const sendContactMessage = async (contactData) => {
     setLoading(true);

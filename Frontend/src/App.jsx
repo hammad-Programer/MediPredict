@@ -1,5 +1,5 @@
-import React, { useContext } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import React, { useContext } from "react";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
 import Dashboard from "./Pages/Patient/Dashboard";
@@ -28,8 +28,14 @@ import Doctors from "./Pages/Admin/Doctors";
 import AdminPanel from "./Pages/Admin/AdminPanal";
 import Feedbacks from "./Pages/Admin/Feedbacks";
 import Announcements from "./Pages/Admin/Announcements";
-import DoctorChat from "./Pages/Doctor/DoctorChat";
+import DoctorChatList from "./Pages/Doctor/DoctorChatList";
+import DoctorChatWindow from "./Pages/Doctor/doctorChatWindow";
 import Messages from "./Pages/Patient/Messages";
+import Blogs from "./Pages/Doctor/Blogs";
+import AllBlogs from "./Components/AllBlogs";
+import BlogDetail from "./Components/BlogDetail";
+import VideoCall from "./Components/VideoCall";
+import Audio from "./Components/Audio";
 
 const App = () => {
   const location = useLocation();
@@ -40,6 +46,7 @@ const App = () => {
     "/docDashboard/appointments",
     "/docDashboard/profile",
     "/docDashboard/messages",
+    "/docDashboard/upload-blog",
     "/Admin",
     "/admin/doctors",
     "/admin/patients",
@@ -50,22 +57,25 @@ const App = () => {
     "/admin-login",
     "/admin/feedbacks",
     "/admin/announcements",
-    "/patient-chat"
+    "/patient-chat",
+    "/docverify-otp",
+    "/verify-otp",
+    "/video-call",
+    "/audio-call",
   ];
 
-  const hideFooterPaths = ["/messages"];
+  const shouldHideNavbar = hideNavbarPaths.some((path) =>
+    location.pathname.startsWith(path)
+  );
 
-  const shouldHideNavbar = hideNavbarPaths.includes(location.pathname);
-  const shouldHideFooter = hideFooterPaths.includes(location.pathname);
-
-  if (loadingUser) {
-    return <Spinner />;
-  }
+  if (loadingUser) return <Spinner />;
 
   return (
     <>
       {!shouldHideNavbar && <Navbar />}
+
       <Routes>
+        {/* Public and Patient Routes */}
         <Route path="/" element={<Navigate to="/dashboard" />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/verify-otp" element={<VerifyOTP />} />
@@ -79,7 +89,12 @@ const App = () => {
         <Route path="/messages" element={<Messages />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/all-blogs" element={<AllBlogs />} />
+        <Route path="/blogs/:id" element={<BlogDetail />} />
 
+        {/* Top-level full-screen Video/Audio Call */}
+        <Route path="/video-call" element={<VideoCall />} />
+        <Route path="/audio-call" element={<Audio />} />
 
         {/* Doctor Routes */}
         <Route path="/doctor-signup" element={<DoctorSignup />} />
@@ -88,7 +103,9 @@ const App = () => {
           <Route index element={<DoctorPanel />} />
           <Route path="appointments" element={<Appointments />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="messages" element={<DoctorChat />} />
+          <Route path="messages" element={<DoctorChatList />} />
+          <Route path="messages/:patientId" element={<DoctorChatWindow />} />
+          <Route path="upload-blog" element={<Blogs />} />
         </Route>
 
         {/* Admin Routes */}
@@ -101,7 +118,8 @@ const App = () => {
           <Route path="announcements" element={<Announcements />} />
         </Route>
       </Routes>
-      {!shouldHideFooter && <Footer />}
+
+      <Footer />
     </>
   );
 };

@@ -7,7 +7,9 @@ import {
   faUser,
   faRightFromBracket,
   faEnvelope,
+  faUpload, 
 } from "@fortawesome/free-solid-svg-icons";
+
 
 import AppContext from "../../Context/AppContext";
 import { toast } from "sonner";
@@ -91,6 +93,15 @@ const DocDashboard = () => {
     >
       <FontAwesomeIcon icon={faUser} className="mr-3 w-4 h-4" />
       Profile
+    </div>
+  </li>
+  <li>
+    <div
+      onClick={() => navigate("/docDashboard/upload-blog")}
+      className={navItemClasses("/docDashboard/upload-blog")}
+    >
+      <FontAwesomeIcon icon={faUpload} className="mr-3 w-4 h-4" />
+      Upload Blog
     </div>
   </li>
 </ul>

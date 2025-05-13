@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./Config/db");
 const http = require("http");
-const { setupSocket } = require("../Backend/Socket/socketServer");
+const { setupSocket } = require("./Socket/socketServer");
 
 const authRoutes = require("./Routes/authPatient");
 const testimonialRoutes = require("./Routes/testimonialRoutes");
@@ -15,9 +15,10 @@ const adminRoutes = require("./Routes/adminRoutes");
 const feedbackRoutes = require("./Routes/feedbackRoutes");
 const announcementRoutes = require("./Routes/announcementRoutes");
 const chatRoutes = require("./Routes/chatRoutes");
+const blogRoutes = require("./Routes/blogRoutes");
 
 const app = express();
-const server = http.createServer(app); // ✅ Correct server
+const server = http.createServer(app);
 
 app.use(express.json());
 app.use(
@@ -26,9 +27,6 @@ app.use(
     credentials: true,
   })
 );
-
-// Connect to DB
-connectDB();
 
 // All Routes
 app.use("/api/auth", authRoutes);
@@ -41,12 +39,27 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/announcement", announcementRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/blogs", blogRoutes);
 
-// ✅ Setup WebSocket server
-setupSocket(server);
+// Start server only after DB connection
+const startServer = async () => {
+  try {
+    console.log(`[Server] Starting server initialization...`);
+    await connectDB();
+    console.log(
+      `[Server] Database connection established, setting up Socket.IO`
+    );
+    setupSocket(server);
 
-// ✅ Listen with SERVER, not app
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () =>
-  console.log(`✅ Server running with Socket.IO on port ${PORT}`)
-);
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`✅ [Server] Running with Socket.IO on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error(`❌ [Server] Failed to start server: ${error.message}`);
+    console.error(`[Server] Error stack:`, error.stack);
+    process.exit(1);
+  }
+};
+
+startServer();

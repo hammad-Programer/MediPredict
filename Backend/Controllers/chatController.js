@@ -2,7 +2,7 @@ const Chat = require("../Model/Chat");
 const DocProfile = require("../Model/DocProfile");
 const Patient = require("../Model/Patient");
 
-// ✅ Save a new message and return messages with chatId
+// ✅ Save a message
 const saveMessage = async (req, res) => {
   try {
     const {
@@ -41,7 +41,6 @@ const saveMessage = async (req, res) => {
     chat.messages.push(newMessage);
     await chat.save();
 
-    // Attach chatId to all messages
     const messagesWithChatId = chat.messages.map((msg) => ({
       ...msg.toObject(),
       chatId: chat._id,
@@ -56,7 +55,7 @@ const saveMessage = async (req, res) => {
   }
 };
 
-// ✅ Get chat history and include chatId in each message
+// ✅ Get chat history
 const getChatHistory = async (req, res) => {
   try {
     const { doctorId, patientId } = req.params;
@@ -68,7 +67,7 @@ const getChatHistory = async (req, res) => {
     }
 
     const chat = await Chat.findOne({ doctorId, patientId })
-      .populate("doctorId", "username email specialization")
+      .populate("doctorId", "name email")
       .populate("patientId", "username email");
 
     if (!chat) {
@@ -89,24 +88,22 @@ const getChatHistory = async (req, res) => {
   }
 };
 
-// ✅ Edit a message
+// ✅ Edit message
 const editMessage = async (req, res) => {
   try {
     const { chatId, messageId, newText } = req.body;
 
     const chat = await Chat.findById(chatId);
-    if (!chat) {
+    if (!chat)
       return res
         .status(404)
         .json({ success: false, message: "Chat not found" });
-    }
 
     const message = chat.messages.id(messageId);
-    if (!message) {
+    if (!message)
       return res
         .status(404)
         .json({ success: false, message: "Message not found" });
-    }
 
     message.text = newText;
     await chat.save();
@@ -120,24 +117,22 @@ const editMessage = async (req, res) => {
   }
 };
 
-// ✅ Delete a message
+// ✅ Delete message
 const deleteMessage = async (req, res) => {
   try {
     const { chatId, messageId } = req.params;
 
     const chat = await Chat.findById(chatId);
-    if (!chat) {
+    if (!chat)
       return res
         .status(404)
         .json({ success: false, message: "Chat not found" });
-    }
 
     const message = chat.messages.id(messageId);
-    if (!message) {
+    if (!message)
       return res
         .status(404)
         .json({ success: false, message: "Message not found" });
-    }
 
     message.remove();
     await chat.save();
@@ -151,10 +146,12 @@ const deleteMessage = async (req, res) => {
   }
 };
 
-// ✅ Fetch single doctor info
+// ✅ Get doctor profile from linked Doctor model (_id from JWT)
 const doctorInfo = async (req, res) => {
   try {
-    const doctor = await DocProfile.findById(req.params.doctorId);
+    const doctor = await DocProfile.findOne({
+      doctorRefId: req.params.doctorId,
+    });
 
     if (!doctor) {
       return res
@@ -162,36 +159,37 @@ const doctorInfo = async (req, res) => {
         .json({ success: false, message: "Doctor not found" });
     }
 
-    res.json({ success: true, doctor });
+    return res.status(200).json({ success: true, doctor });
   } catch (error) {
     console.error("Error fetching doctor:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
-// ✅ Get all chat summaries for a doctor
+// ✅ Get all chat patients for a doctor
 const getDoctorChats = async (req, res) => {
   try {
     const doctorId = req.params.doctorId;
 
-    const chats = await Chat.find({ doctorId }).populate("patientId", "name");
+    const chats = await Chat.find({ doctorId }).populate(
+      "patientId",
+      "username email"
+    );
 
     const patients = chats.map((chat) => {
-      const latestMessage =
-        chat.messages.length > 0
-          ? chat.messages[chat.messages.length - 1].text || "File"
-          : "No messages yet";
+      const lastMsg = chat.messages[chat.messages.length - 1];
       return {
         _id: chat.patientId._id,
-        name: chat.patientId.name,
-        latestMessage,
+        username: chat.patientId.username,
+        latestMessage: lastMsg?.text || "No messages yet",
+        unreadCount: 0, // Add actual logic if implementing unread tracking
       };
     });
 
-    res.status(200).json({ success: true, patients });
+    return res.status(200).json({ success: true, patients });
   } catch (error) {
     console.error("Error fetching doctor chats:", error);
-    res.status(500).json({ success: false, message: "Server error" });
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

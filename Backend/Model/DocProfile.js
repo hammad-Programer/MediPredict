@@ -2,8 +2,22 @@ const mongoose = require("mongoose");
 
 const docProfileSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    // Reference to the Doctor model (needed for JWT-based lookups)
+    doctorRefId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor", // Ensure this matches your Doctor model name
+      required: true,
+      unique: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     speciality: String,
     education: String,
     experience: String,
@@ -18,6 +32,6 @@ const docProfileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Avoid OverwriteModelError
+// ✅ Prevent model overwrite errors in dev
 module.exports =
   mongoose.models.DocProfile || mongoose.model("DocProfile", docProfileSchema);

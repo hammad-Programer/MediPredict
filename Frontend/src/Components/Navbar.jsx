@@ -23,7 +23,7 @@ const Navbar = () => {
     { name: "Testimonial", link: "/testimonial" },
     { name: "About", link: "/about" },
     { name: "Contact", link: "/contact" },
-    { name: "Blog", link: "/Blog" },
+    { name: "Blog", link: "/all-blogs" },
     { name: "FAQs", link: "/faqs" },
     ...(user ? [{ name: "Appointments", link: "/appointments" }] : []),
     ...(user ? [{ name: "Messages", link: "/messages" }] : []),

@@ -5,6 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { Phone, Video } from "lucide-react";
 import ChatProvider from "../../Context/ChatContext";
+import socket from "../../Socket/socket";
+import { useCall } from "../../Context/CallContext";
+import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+
 
 const Messages = () => {
   const token = localStorage.getItem("token");
@@ -12,6 +17,25 @@ const Messages = () => {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [onlineDoctors, setOnlineDoctors] = useState({});
+  const { startCall } = useCall();
+  const navigate = useNavigate();
+  const location = useLocation()
+
+  const handleStartCall = (type) => {
+  if (!selectedDoctor || !patientId) return;
+
+  startCall({
+    type,
+    userId: patientId,
+    targetUserId: selectedDoctor._id,
+    role: "patient",
+  });
+
+  navigate(type === "audio" ? "/audio-call" : "/video-call", {
+    state: { returnTo: location.pathname }, 
+  });
+};
 
   useEffect(() => {
     if (token) {
@@ -23,6 +47,31 @@ const Messages = () => {
       }
     }
   }, [token]);
+
+  useEffect(() => {
+    if (patientId) {
+      socket.emit("user-online", { userId: patientId, role: "patient" });
+
+      socket.on("update-user-status", ({ userId, status }) => {
+        setOnlineDoctors((prev) => ({ ...prev, [userId]: status }));
+      });
+
+      socket.on("incoming-call", ({ fromUserId, offer }) => {
+        startCall({
+          type: offer.type,
+          userId: patientId,
+          targetUserId: fromUserId,
+          role: "patient",
+        });
+        navigate(offer.type === "audio" ? "/audio-call" : "/video-call");
+      });
+
+      return () => {
+        socket.off("update-user-status");
+        socket.off("incoming-call");
+      };
+    }
+  }, [patientId, startCall, navigate]);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -95,18 +144,20 @@ const Messages = () => {
                 />
                 <div>
                   <h2 className="font-semibold text-sm">Dr. {selectedDoctor.name}</h2>
-                  <p className="text-xs text-gray-500">Online</p>
+                  <p className="text-xs text-gray-500">
+                    {onlineDoctors[selectedDoctor._id] === "online" ? "Online" : "Offline"}
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3 text-blue-500">
-                <Phone className="cursor-pointer" />
-                <Video className="cursor-pointer" />
+                <Phone className="cursor-pointer" onClick={() => handleStartCall("audio")} />
+                <Video className="cursor-pointer" onClick={() => handleStartCall("video")} />
               </div>
             </div>
 
-            {/* Chat window */}
+            {/* Chat window + CallManager */}
             <div className="flex-1 flex flex-col overflow-hidden">
-            <ChatWindow doctorId={selectedDoctor._id} patientId={patientId} senderRole="Patient" />
+              <ChatWindow doctorId={selectedDoctor._id} patientId={patientId} senderRole="Patient" />
             </div>
           </ChatProvider>
         ) : (

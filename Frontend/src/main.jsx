@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import { AppProvider } from "./Context/AppContext";
-import { ProfileProvider } from "./Context/ProfileContext"; // ✅ import profile context
-import { AppointmentProvider} from "./Context/AppointmentContext"; // ✅ import profile context
+import { ProfileProvider } from "./Context/ProfileContext"; 
+import { AppointmentProvider} from "./Context/AppointmentContext"; 
 import App from "./App";
 import "./index.css";
-import ChatProvider from "./Context/ChatContext"; // ✅ Correct Import
+import 'react-quill/dist/quill.snow.css';
+import ChatProvider from "./Context/ChatContext";
+import { BlogProvider } from "./Context/BlogContext"; 
+import { CallProvider } from "./Context/CallContext";
 
 
 createRoot(document.getElementById("root")).render(
@@ -23,7 +26,11 @@ createRoot(document.getElementById("root")).render(
           }}
         />
         <ChatProvider>
-        <App />
+        <BlogProvider>
+          <CallProvider>
+           <App />
+        </CallProvider>
+        </BlogProvider>
         </ChatProvider>
           
         </BrowserRouter>

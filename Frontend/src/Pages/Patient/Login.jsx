@@ -25,7 +25,7 @@ const Login = () => {
     const success = await login(formData);
 
     if (success) {
-      toast.success("Login successfully");
+      toast.success(" Patient logged in successfully");
       setTimeout(() => navigate("/dashboard"), 2000);
     } else {
       toast.error("Invalid email or password!");

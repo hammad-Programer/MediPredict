@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useChat } from "../../Context/ChatContext";
 
-function ChatBox({ currentUserId }) {
+function ChatBox({ currentUserId, currentUserRole }) {
   const { messages, setMessages } = useChat();
   const chatEndRef = useRef(null);
 
@@ -9,19 +9,18 @@ function ChatBox({ currentUserId }) {
   const [editId, setEditId] = useState(null);
   const [editText, setEditText] = useState("");
 
-  // ✅ Scroll to bottom on new message
+  const didMountRef = useRef(false);
+
   useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  // ✅ Log real-time updates
-  useEffect(() => {
-    console.log("📥 Updated messages in ChatBox:", messages);
-  }, [messages]);
-
-  // Hide context menu when clicked elsewhere
   useEffect(() => {
     const handleClickOutside = () => setContextMenu({ ...contextMenu, visible: false });
     window.addEventListener("click", handleClickOutside);
@@ -74,18 +73,21 @@ function ChatBox({ currentUserId }) {
     <div className="flex flex-col gap-3 p-6 overflow-y-auto flex-grow bg-gradient-to-b from-white relative">
       {messages.map((msg) => {
         const isSender = msg.senderId?.toString() === currentUserId?.toString();
+        const isOwnMessage = isSender && msg.senderModel === currentUserRole;
 
         return (
           <div
-            key={msg._id} // ✅ Use stable key
+            key={msg._id}
             onContextMenu={(e) => {
-              e.preventDefault();
-              setContextMenu({
-                visible: true,
-                x: e.pageX - 150,
-                y: e.pageY,
-                message: msg,
-              });
+              if (isOwnMessage) {
+                e.preventDefault();
+                setContextMenu({
+                  visible: true,
+                  x: e.pageX - 150,
+                  y: e.pageY,
+                  message: msg,
+                });
+              }
             }}
             className={`flex ${isSender ? "justify-end" : "justify-start"}`}
           >
@@ -96,7 +98,6 @@ function ChatBox({ currentUserId }) {
                   : "bg-gray-100 text-gray-800 border rounded-bl-none"
               }`}
             >
-              {/* Message Type Renderer */}
               {msg.type === "image" ? (
                 <img src={msg.fileData} alt="sent image" className="rounded-lg max-w-full" />
               ) : msg.type === "file" ? (

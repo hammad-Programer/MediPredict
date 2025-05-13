@@ -11,6 +11,7 @@ const generateOTP = () =>
   Math.floor(100000 + Math.random() * 900000).toString();
 
 // 📌 Register - stores temp user in OTP collection
+// 📌 Register - stores temp user in OTP collection
 const register = async (req, res) => {
   try {
     console.log("🔹 Received Register Request:", req.body);
@@ -33,15 +34,14 @@ const register = async (req, res) => {
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 20 * 60 * 1000); // 20 min
 
+    const tempUser = { username, hashedPassword, role };
+    console.log("📦 Saving OTP with tempUser:", tempUser);
+
     await OTP.create({
       email,
       otp,
       expiresAt: otpExpires,
-      tempUser: {
-        username,
-        hashedPassword,
-        role,
-      },
+      tempUser,
     });
 
     await sendOTPEmail(email, otp);
@@ -54,10 +54,12 @@ const register = async (req, res) => {
 
 // 📌 Verify OTP - finalize patient registration
 const verifyOTP = async (req, res) => {
-  const { email, otp } = req.body;
+  let { email, otp } = req.body;
+  email = email?.trim().toLowerCase(); // ✅ normalize
 
   try {
     const otpRecord = await OTP.findOne({ email });
+    console.log("📦 OTP Record:", otpRecord);
 
     if (!otpRecord || otpRecord.otp !== otp) {
       return res.status(400).json({ msg: "Invalid OTP. Please try again." });
@@ -68,12 +70,23 @@ const verifyOTP = async (req, res) => {
       return res.status(400).json({ msg: "OTP expired. Request a new one." });
     }
 
-    const { username, hashedPassword, role } = otpRecord.tempUser;
+    if (!otpRecord.tempUser) {
+      return res.status(400).json({ msg: "Temp user data missing in OTP." });
+    }
+
+    const { username, hashedPassword: password, role } = otpRecord.tempUser;
+
+    console.log("🧾 Creating Patient with:", {
+      username,
+      email,
+      password,
+      role,
+    });
 
     const newUser = await Patient.create({
       username,
       email,
-      password: hashedPassword,
+      password,
       role: role || "patient",
       isVerified: true,
     });

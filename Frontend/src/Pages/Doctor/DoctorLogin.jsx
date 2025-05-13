@@ -22,20 +22,23 @@ const DoctorLogin = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-  
-    const response = await doctorLogin({
-      email: formData.email.trim().toLowerCase(),
-      password: formData.password,
-    });
-  
-    if (response?.doctor) {
-      toast.success("Doctor logged in successfully!");
-      setTimeout(() => navigate("/docDashboard"), 2000);
-    } else {
-      toast.error(response?.error || "Invalid email or password!");
-    }
-  };
+  e.preventDefault();
+
+  const response = await doctorLogin({
+    email: formData.email.trim().toLowerCase(),
+    password: formData.password,
+  });
+
+  console.log("🧪 Doctor login response:", response);
+
+  if (response?.success) {
+    toast.success("Doctor logged in successfully!");
+    setTimeout(() => navigate("/docDashboard"), 2000);
+  } else {
+    toast.error(response?.error || "Invalid email or password!");
+  }
+};
+
   
   
   return (

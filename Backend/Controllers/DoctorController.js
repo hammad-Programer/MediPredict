@@ -1,6 +1,7 @@
 const Doctor = require("../Model/Doctor");
 const OTP = require("../Model/OTP");
 const jwt = require("jsonwebtoken");
+const DocProfile = require("../Model/DocProfile");
 const { sendOTPEmail } = require("../Utils/DoctorEmail");
 
 // JWT Generator
@@ -18,6 +19,7 @@ const registerDoctor = async (req, res) => {
     const existing = await Doctor.findOne({ email });
     if (existing) return res.status(400).json({ msg: "Doctor already exists" });
 
+    // Create Doctor
     const doctor = await Doctor.create({
       username,
       email,
@@ -25,10 +27,19 @@ const registerDoctor = async (req, res) => {
       specialization,
     });
 
+    // ✅ Create linked DocProfile (new)
+    await DocProfile.create({
+      doctorRefId: doctor._id,
+      name: username,
+      email,
+      speciality: specialization,
+    });
+
+    // Send OTP
     await OTP.deleteMany({ email });
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 20 * 60 * 1000);
-    const otpDoc = await OTP.create({ email, otp, expiresAt: otpExpires });
+    await OTP.create({ email, otp, expiresAt: otpExpires });
 
     console.log(`📨 OTP for ${email}: ${otp}`);
     await sendOTPEmail(email, otp);
@@ -126,24 +137,36 @@ const loginDoctor = async (req, res) => {
   email = email.trim().toLowerCase();
 
   try {
+    // 🔍 Find doctor by email
     const doctor = await Doctor.findOne({ email });
+
     if (!doctor) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
+    // ✅ Compare password
     const isMatch = await doctor.matchPassword(password);
+    console.log("🧪 Comparing:", password, "with", doctor.password);
+    console.log("✅ Match result:", isMatch);
+
     if (!isMatch) {
       return res.status(400).json({ msg: "Invalid credentials" });
     }
 
+    // ✅ Optional: Check if verified (uncomment if needed)
+    // if (!doctor.isVerified) {
+    //   return res.status(403).json({ msg: "Please verify your account via OTP before logging in." });
+    // }
+
+    // ✅ Send token and doctor object
     res.status(200).json({
       msg: "Login successful",
+      token: generateToken(doctor._id), // ✅ root-level token
       doctor: {
         id: doctor._id,
         username: doctor.username,
         email: doctor.email,
         specialization: doctor.specialization,
-        token: generateToken(doctor._id),
       },
     });
   } catch (err) {
@@ -151,6 +174,7 @@ const loginDoctor = async (req, res) => {
     res.status(500).json({ msg: "Server Error", error: err.message });
   }
 };
+
 const countDoctor = async (req, res) => {
   try {
     const count = await Doctor.countDocuments();

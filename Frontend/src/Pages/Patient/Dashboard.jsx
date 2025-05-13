@@ -33,7 +33,7 @@ const Dashboard = () => {
         if (res.data?.message) {
           setAnnouncement(res.data.message);
   
-          setTimeout(() => setAnnouncement(null), 3000);
+          setTimeout(() => setAnnouncement(null), 2000);
         }
       } catch (err) {
         console.error("Failed to load announcement:", err);
@@ -123,14 +123,21 @@ const Dashboard = () => {
     <>
     <Feedback/>
     {announcement && (
-  <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-100 border border-yellow-300 shadow-lg rounded-lg px-6 py-3 text-center w-[90%] sm:w-[450px] animate-slide-down">
-    <strong className="text-sm text-yellow-800">📢 Announcement:</strong>
-    <p className="text-sm text-yellow-900 mt-1">{announcement}</p>
+  <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-[90%] sm:w-[450px] bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 px-5 py-4 shadow-md rounded-lg animate-slide-down transition-all duration-300 ease-in-out">
+    
+    {/* Title */}
+    <div className="flex items-center gap-2 mb-1">
+      <span className="text-lg">📢</span>
+      <strong className="text-sm sm:text-base">Announcement</strong>
+    </div>
+
+    {/* Message */}
+    <p className="text-sm sm:text-[15px] leading-snug">{announcement}</p>
   </div>
 )}
 
 
-
+   
       {/* Hero Section */}
       <div
         className="relative bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden max-w-6xl mx-auto my-16 shadow-lg"

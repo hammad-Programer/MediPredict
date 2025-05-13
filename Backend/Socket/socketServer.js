@@ -1,6 +1,9 @@
+// socketServer.js
 const { Server } = require("socket.io");
+const mongoose = require("mongoose");
 const Chat = require("../Model/Chat");
 
+const onlineUsers = new Map();
 let io;
 
 const setupSocket = (server) => {
@@ -8,22 +11,38 @@ const setupSocket = (server) => {
     cors: {
       origin: "http://localhost:5173",
       credentials: true,
-      methods: ["GET", "POST", "PUT", "DELETE"],
     },
   });
 
   io.on("connection", (socket) => {
-    console.log("✅ New user connected:", socket.id);
+    console.log(`✅ [Socket] Connected: ${socket.id}`);
 
-    socket.on("join-room", ({ doctorId, patientId }) => {
-      const roomId = [doctorId, patientId].sort().join("_");
-      socket.join(roomId);
-      console.log(`🧠 User joined room: ${roomId}`);
+    socket.on("user-online", ({ userId, role }) => {
+      if (!userId) return;
+      onlineUsers.set(userId, socket.id);
+      console.log(`🟢 ${role} (${userId}) is online`);
+      io.emit("update-user-status", { userId, status: "online" });
     });
 
-    socket.on("send-message", async (messageData) => {
-      console.log("📥 Server received message:", messageData);
+    socket.on("disconnect", () => {
+      for (const [userId, socketId] of onlineUsers.entries()) {
+        if (socketId === socket.id) {
+          onlineUsers.delete(userId);
+          console.log(`🔴 User ${userId} went offline`);
+          io.emit("update-user-status", { userId, status: "offline" });
+          break;
+        }
+      }
+    });
 
+    socket.on("join-room", ({ doctorId, patientId }) => {
+      if (!doctorId || !patientId) return;
+      const roomId = [String(doctorId), String(patientId)].sort().join("_");
+      socket.join(roomId);
+      console.log(`🧠 Joined room: ${roomId}`);
+    });
+
+    socket.on("send-message", async (data) => {
       const {
         doctorId,
         patientId,
@@ -33,7 +52,7 @@ const setupSocket = (server) => {
         type,
         fileData,
         fileName,
-      } = messageData;
+      } = data;
 
       if (
         !doctorId ||
@@ -42,13 +61,14 @@ const setupSocket = (server) => {
         !senderModel ||
         (!text && !fileData)
       ) {
-        console.log("❌ Missing fields in messageData");
-        return;
+        return console.error("❌ Invalid message payload");
       }
 
       try {
         let chat = await Chat.findOne({ doctorId, patientId });
-        if (!chat) chat = new Chat({ doctorId, patientId, messages: [] });
+        if (!chat) {
+          chat = new Chat({ doctorId, patientId, messages: [] });
+        }
 
         const newMessage = {
           senderId,
@@ -66,28 +86,61 @@ const setupSocket = (server) => {
         chat.messages.push(newMessage);
         await chat.save();
 
-        const savedMessage = chat.messages[chat.messages.length - 1];
-
-        const roomId = [doctorId, patientId].sort().join("_");
-        console.log(`📡 Broadcasting to room: ${roomId}`);
-
+        const roomId = [String(doctorId), String(patientId)].sort().join("_");
         io.to(roomId).emit("receive-message", {
-          _id: savedMessage._id, // 🔥 include this
-          senderId: savedMessage.senderId,
-          senderModel: savedMessage.senderModel,
-          text: savedMessage.text,
-          fileData: savedMessage.fileData,
-          fileName: savedMessage.fileName,
-          type: savedMessage.type,
-          timestamp: savedMessage.timestamp,
+          _id: newMessage._id,
+          senderId,
+          senderModel,
+          text,
+          fileData,
+          fileName,
+          type,
+          timestamp: newMessage.timestamp,
+          chatId: chat._id,
         });
       } catch (error) {
-        console.error("❌ Error saving message:", error.message);
+        console.error("❌ Error sending message:", error.message);
       }
     });
 
-    socket.on("disconnect", () => {
-      console.log("❌ User disconnected:", socket.id);
+    socket.on("call-user", ({ toUserId, fromUserId, offer, callType }) => {
+      const targetSocketId = onlineUsers.get(toUserId);
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("incoming-call", {
+          fromUserId,
+          offer,
+          callType,
+        });
+        console.log(`📞 Call from ${fromUserId} to ${toUserId} (${callType})`);
+      }
+    });
+
+    socket.on("accept-call", ({ toUserId, answer }) => {
+      const callerSocket = onlineUsers.get(toUserId);
+      if (callerSocket) {
+        io.to(callerSocket).emit("call-accepted", { answer });
+      }
+    });
+
+    socket.on("ice-candidate", ({ toUserId, candidate }) => {
+      const targetSocketId = onlineUsers.get(toUserId);
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("ice-candidate", { candidate });
+      }
+    });
+
+    socket.on("end-call", ({ toUserId }) => {
+      const targetSocketId = onlineUsers.get(toUserId);
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("call-ended");
+      }
+    });
+
+    socket.on("call-chat", ({ toUserId, fromUserId, message }) => {
+      const targetSocketId = onlineUsers.get(toUserId);
+      if (targetSocketId) {
+        io.to(targetSocketId).emit("call-chat", { fromUserId, message });
+      }
     });
   });
 };
