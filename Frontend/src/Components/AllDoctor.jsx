@@ -165,9 +165,15 @@ const AllDoctor = () => {
               <div
                 key={doc._id}
                 onClick={() => {
-                  setSelectedDoctor(doc);
-                  setShowModal(true);
-                }}
+  if (!user || !user._id) {
+    toast.error("Please sign up to book a doctor.");
+    navigate("/signup");
+    return;
+  }
+  setSelectedDoctor(doc);
+  setShowModal(true);
+}}
+
                 className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer overflow-hidden h-[260px]"
               >
                 <div className="w-full h-40 overflow-hidden">

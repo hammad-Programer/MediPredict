@@ -40,11 +40,12 @@ const Footer = () => {
         <div>
           <h3 className="text-lg font-semibold text-blue-400 mb-4">Services</h3>
           <ul className="space-y-2 text-gray-400">
-            <li><Link to="/services/online-consultation" className="hover:text-white transition">Online Consultation</Link></li>
-            <li><Link to="/services/specialist-doctors" className="hover:text-white transition">Specialist Doctors</Link></li>
-            <li><Link to="/services/health-education" className="hover:text-white transition">Health Education</Link></li>
-            <li><Link to="/services/community" className="hover:text-white transition">Community</Link></li>
-          </ul>
+  <li><span className="hover:text-white transition cursor-default">Online Consultation</span></li>
+  <li><span className="hover:text-white transition cursor-default">Specialist Doctors</span></li>
+  <li><span className="hover:text-white transition cursor-default">Health Education</span></li>
+  <li><span className="hover:text-white transition cursor-default">Community</span></li>
+</ul>
+
         </div>
 
         {/* ✅ 3. Support */}
@@ -64,7 +65,6 @@ const Footer = () => {
             <li><Link to="/about" className="hover:text-white transition">About</Link></li>
             <li><Link to="/doctors" className="hover:text-white transition">Doctors</Link></li>
             <li><Link to="/testimonial" className="hover:text-white transition">Testimonial</Link></li>
-            <li><Link to="/careers" className="hover:text-white transition">Careers</Link></li>
           </ul>
         </div>
       </div>

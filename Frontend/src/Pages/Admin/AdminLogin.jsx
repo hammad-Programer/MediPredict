@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLock, faUser, faPen } from "@fortawesome/free-solid-svg-icons";
-
+import Spinner from "../../Components/Spinner";
 const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,14 +36,17 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-white px-4">
+      <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md">
+        {/* Heading */}
         <h2 className="text-2xl font-bold text-center text-gray-700 mb-6 flex items-center justify-center gap-2">
           <FontAwesomeIcon icon={faLock} className="text-blue-600" />
           Admin Login
         </h2>
 
+        {/* Form */}
         <form onSubmit={handleLogin} className="space-y-5">
+
           {/* Email Input */}
           <div className="relative">
             <FontAwesomeIcon icon={faUser} className="absolute left-3 top-3 text-gray-400" />
@@ -54,7 +57,7 @@ const AdminLogin = () => {
               onChange={(e) => setEmail(e.target.value)}
               onFocus={() => setFocusedField("email")}
               onBlur={() => setFocusedField("")}
-              className="w-full pl-10 pr-4 py-2 border  rounded-md focus:outline-none "
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               required
             />
             {focusedField === "email" && (
@@ -72,15 +75,18 @@ const AdminLogin = () => {
               onChange={(e) => setPassword(e.target.value)}
               onFocus={() => setFocusedField("password")}
               onBlur={() => setFocusedField("")}
-              className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               required
             />
+            {focusedField === "password" && (
+              <FontAwesomeIcon icon={faPen} className="absolute right-3 top-3 text-blue-500" />
+            )}
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-md font-medium hover:bg-blue-700 transition"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition"
           >
             Login
           </button>

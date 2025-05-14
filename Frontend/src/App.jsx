@@ -1,7 +1,11 @@
+import React, { useContext, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import React, { useContext } from "react";
+import AppContext from "./Context/AppContext";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
+import Spinner from "./Components/Spinner";
+
+// Pages & Components
 import Dashboard from "./Pages/Patient/Dashboard";
 import Signup from "./Pages/Patient/Signup";
 import Login from "./Pages/Patient/Login";
@@ -19,8 +23,6 @@ import Appointments from "./Pages/Doctor/Appointments";
 import Profile from "./Pages/Doctor/Profile";
 import AllDoctor from "./Components/AllDoctor";
 import PatientAppointments from "./Pages/Patient/PatientAppoinments";
-import AppContext from "./Context/AppContext";
-import Spinner from "./Components/spinner";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import AdminLogin from "./Pages/Admin/AdminLogin";
 import Patients from "./Pages/Admin/Patients";
@@ -36,10 +38,41 @@ import AllBlogs from "./Components/AllBlogs";
 import BlogDetail from "./Components/BlogDetail";
 import VideoCall from "./Components/VideoCall";
 import Audio from "./Components/Audio";
+import TermsAndServices from "./Components/TermsAndServices";
+import PrivacyPolicy from "./Components/PrivacyPolicy";
 
 const App = () => {
   const location = useLocation();
   const { loadingUser } = useContext(AppContext);
+  const [routeLoading, setRouteLoading] = useState(false);
+
+  // Only these routes show the spinner
+  const spinnerRoutes = [
+    "/docDashboard",
+    "/docDashboard/appointments",
+    "/docDashboard/profile",
+    "/docDashboard/messages",
+    "/Admin",
+    "/admin/doctors",
+    "/admin/patients",
+    "/admin/feedbacks",
+    "/admin/announcements",
+    "/",
+    "/dashboard",
+    "/verify-otp",
+    "/docverify-otp",
+    "/contact",
+    "/faqs",
+    "/about",
+    "/testimonial",
+    "/doctors",
+    "/appointments",
+    "/messages",
+    "/all-blogs",
+    "/blogs",
+    "/terms-of-service",
+    "/privacy-policy",
+  ];
 
   const hideNavbarPaths = [
     "/docDashboard",
@@ -64,11 +97,26 @@ const App = () => {
     "/audio-call",
   ];
 
-  const shouldHideNavbar = hideNavbarPaths.some((path) =>
+  const shouldHideNavbar = hideNavbarPaths.some(path =>
     location.pathname.startsWith(path)
   );
 
-  if (loadingUser) return <Spinner />;
+  useEffect(() => {
+    const match = spinnerRoutes.some(path =>
+      location.pathname.startsWith(path)
+    );
+
+    if (match) {
+      setRouteLoading(true);
+      const timeout = setTimeout(() => setRouteLoading(false), 500);
+      return () => clearTimeout(timeout);
+    } else {
+      setRouteLoading(false); // No match, ensure it's false
+    }
+  }, [location.pathname]); // ✅ important to use pathname only
+
+  // Only show Spinner if loadingUser or current route is in spinnerRoutes
+  if (loadingUser || routeLoading) return <Spinner />;
 
   return (
     <>
@@ -91,8 +139,10 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/all-blogs" element={<AllBlogs />} />
         <Route path="/blogs/:id" element={<BlogDetail />} />
+        <Route path="/terms-of-service" element={<TermsAndServices />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
-        {/* Top-level full-screen Video/Audio Call */}
+        {/* Video/Audio Call Routes */}
         <Route path="/video-call" element={<VideoCall />} />
         <Route path="/audio-call" element={<Audio />} />
 

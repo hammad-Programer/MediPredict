@@ -37,46 +37,47 @@ export const AppProvider = ({ children }) => {
 
   // ✅ Patient Signup
   const signup = async (userData) => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await axios.post(`${BASE_URL}/register`, userData);
-      
-      // Store token and set user for navbar change
-      localStorage.setItem("token", res.data.token);
-      setUser(res.data.user);
-      
-      
-      setLoading(false);
-      return res.data;
-    } catch (err) {
-      const errorMsg = err.response?.data?.msg || "Signup failed! Try again.";
-      setLoading(false);
-      setError(errorMsg);
-      return { error: errorMsg };
-    }
-  };
-  
+  setLoading(true);
+  setError("");
+
+  try {
+    const res = await axios.post(`${BASE_URL}/register`, userData);
+    localStorage.setItem("token", res.data.token);
+    setUser(res.data.user);
+    return res.data;
+  } catch (err) {
+    const errorMsg = err.response?.data?.msg || "Signup failed! Try again.";
+    setError(errorMsg);
+    return { error: errorMsg };
+  } finally {
+    setLoading(false); // ✅ ensures loading ends
+  }
+};
 
   // ✅ Patient Login
   const login = async (credentials) => {
-    try {
-      const res = await axios.post(`${BASE_URL}/login`, credentials);
-      const token = res.data.token;
-  
-      if (token) {
-        localStorage.setItem("token", res.data.token);
-        setUser(res.data.user); 
- // contains username/email/id
-        return true;
-      } else {
-        throw new Error("Token not found in response");
-      }
-    } catch (err) {
-      setError(err.response?.data?.msg || "Invalid login credentials");
-      return false;
+  setLoading(true);
+  setError("");
+
+  try {
+    const res = await axios.post(`${BASE_URL}/login`, credentials);
+    const token = res.data.token;
+
+    if (token) {
+      localStorage.setItem("token", res.data.token);
+      setUser(res.data.user);
+      return true;
+    } else {
+      throw new Error("Token not found in response");
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.msg || "Invalid login credentials");
+    return false;
+  } finally {
+    setLoading(false); // ✅ ensures loading ends
+  }
+};
+
   
   // ✅ Patient OTP Verification
   const verifyOTP = async (otpData) => {

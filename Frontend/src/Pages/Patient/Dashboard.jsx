@@ -5,6 +5,7 @@ import headerImage from "../../assets/Header.jpeg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from "sonner";
 import axios from "axios";
+import Spinner from "../../Components/Spinner";
 
 import {
   faUserPlus,
@@ -33,7 +34,7 @@ const Dashboard = () => {
         if (res.data?.message) {
           setAnnouncement(res.data.message);
   
-          setTimeout(() => setAnnouncement(null), 2000);
+          setTimeout(() => setAnnouncement(null), 3000);
         }
       } catch (err) {
         console.error("Failed to load announcement:", err);
@@ -93,7 +94,7 @@ const Dashboard = () => {
       const data = await res.json();
       toast.success(data.message || "Subscribed successfully!");
       setSubscriberEmail("");
-      setIsSubscribed(true); // ✅ hide input & show success block
+      setIsSubscribed(true);
     } catch (err) {
       console.error("❌ Error subscribing:", err);
       toast.error("Something went wrong. Please try again.");
@@ -117,24 +118,10 @@ const Dashboard = () => {
     }
   };
     
-  if (loading) return <Spinner />;
   
   return (
     <>
-    <Feedback/>
-    {announcement && (
-  <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-[90%] sm:w-[450px] bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 px-5 py-4 shadow-md rounded-lg animate-slide-down transition-all duration-300 ease-in-out">
-    
-    {/* Title */}
-    <div className="flex items-center gap-2 mb-1">
-      <span className="text-lg">📢</span>
-      <strong className="text-sm sm:text-base">Announcement</strong>
-    </div>
-
-    {/* Message */}
-    <p className="text-sm sm:text-[15px] leading-snug">{announcement}</p>
-  </div>
-)}
+ 
 
 
    
@@ -219,7 +206,6 @@ const Dashboard = () => {
         
       </div>
 
-      {/* How It Works */}
       <section className="max-w-5xl mx-auto my-16 px-6 sm:px-10 md:px-14">
         <h2 className="text-center text-2xl font-bold text-gray-800">How It Works</h2>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -237,7 +223,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Our Services */}
       <section className="max-w-5xl mx-auto my-16 px-6 sm:px-10 md:px-14">
         <h2 className="text-center text-2xl font-bold text-gray-800">Our Services</h2>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -259,7 +244,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Why Choose Us */}
       <section className="max-w-5xl mx-auto my-16 px-6 sm:px-10 md:px-14">
         <h2 className="text-center text-2xl font-bold text-gray-800">Why Choose Us</h2>
         <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -277,7 +261,6 @@ const Dashboard = () => {
         </div>
       </section>
 
-      {/* Newsletter */}
       <section className="max-w-4xl mx-auto my-16 px-6 sm:px-10 md:px-14 text-center bg-gray-100 shadow-lg rounded-lg py-10">
         <h2 className="text-2xl font-bold text-gray-800">Stay Connected</h2>
         <p className="text-gray-700 mt-2">
@@ -316,8 +299,6 @@ const Dashboard = () => {
 </button>
   </div>
 )}
-
-
       </section>
     </>
   );

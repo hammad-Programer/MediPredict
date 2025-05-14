@@ -4,11 +4,14 @@ import { faEnvelope, faLock, faUser, faPen } from "@fortawesome/free-solid-svg-i
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner"; 
 import AppContext from "../../Context/AppContext";
+import Spinner from "../../Components/Spinner";
 
 const Login = () => {
-  const { login, loading } = useContext(AppContext);
+  
+  const { login, loading ,loadingUser } = useContext(AppContext);
   const [focusedField, setFocusedField] = useState("");
   const navigate = useNavigate();
+  
 
   const [formData, setFormData] = useState({
     email: "",
@@ -20,32 +23,38 @@ const Login = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  const success = await login(formData);
 
-    const success = await login(formData);
+  if (success) {
+    toast.success("Patient logged in successfully");
 
-    if (success) {
-      toast.success(" Patient logged in successfully");
-      setTimeout(() => navigate("/dashboard"), 2000);
-    } else {
-      toast.error("Invalid email or password!");
-    }
-  };
+    // ✅ short delay to allow spinner to render
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 500);
+  } else {
+    toast.error("Invalid email or password!");
+  }
+};
+
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 px-4">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
-        <h2 className="text-2xl font-semibold text-center text-gray-700 mb-6">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-100 to-white px-4">
+      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-xl">
+        {/* Heading */}
+        <h2 className="text-2xl font-bold text-center text-gray-700 mb-6">
           <FontAwesomeIcon icon={faUser} className="mr-2 text-blue-600" />
           Patient Login
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
+
           {/* Email Field */}
           <div className="relative">
             <FontAwesomeIcon
               icon={faEnvelope}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute left-3 top-3 text-gray-400"
             />
             <input
               type="email"
@@ -55,7 +64,7 @@ const Login = () => {
               onChange={handleChange}
               onFocus={() => setFocusedField("email")}
               onBlur={() => setFocusedField("")}
-              className="pl-10 w-full px-3 py-2 border rounded-md outline-none"
+              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               required
             />
             {focusedField === "email" && (
@@ -70,7 +79,7 @@ const Login = () => {
           <div className="relative">
             <FontAwesomeIcon
               icon={faLock}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              className="absolute left-3 top-3 text-gray-400"
             />
             <input
               type="password"
@@ -80,7 +89,7 @@ const Login = () => {
               onChange={handleChange}
               onFocus={() => setFocusedField("password")}
               onBlur={() => setFocusedField("")}
-              className="pl-10 w-full px-3 py-2 border rounded-md outline-none"
+              className="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
               required
             />
             {focusedField === "password" && (
@@ -94,21 +103,22 @@ const Login = () => {
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md transition"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg font-medium transition disabled:opacity-50"
             disabled={loading}
           >
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <p className="text-center text-gray-600 mt-4">
+        {/* Navigation to Signup */}
+        <p className="text-center text-sm text-gray-500 mt-6">
           Don't have an account?{" "}
-          <button
+          <span
             onClick={() => navigate("/signup")}
-            className="text-blue-500 hover:underline"
+            className="text-blue-500 font-medium hover:underline cursor-pointer"
           >
             Sign Up
-          </button>
+          </span>
         </p>
       </div>
     </div>
