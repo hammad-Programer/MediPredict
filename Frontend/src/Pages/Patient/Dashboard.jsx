@@ -138,103 +138,111 @@ useEffect(() => {
     <>
       {/* Hero Section */}
       <div
-        className="relative bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden max-w-6xl mx-auto my-16 shadow-lg"
-        style={{ backgroundImage: `url(${headerImage})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 to-transparent z-10"></div>
+  className="relative bg-cover bg-center bg-no-repeat rounded-lg overflow-hidden max-w-6xl mx-auto my-16 shadow-lg"
+  style={{ backgroundImage: `url(${headerImage})` }}
+>
+  <div className="absolute inset-0 bg-gradient-to-r from-blue-900/60 to-transparent z-10"></div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 sm:px-10 md:px-16 lg:px-20 py-20 md:py-32 text-white">
-          <SlideInOnScroll direction="left" className="md:w-1/2 text-center md:text-left">
-            <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">MediPredict</h1>
-            <p className="text-sm sm:text-base max-w-md mb-6">
-              Our team of experienced doctors and healthcare professionals are committed to providing quality care and personalized attention to our patients.
-            </p>
+  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between px-6 sm:px-10 md:px-16 lg:px-20 py-20 md:py-32 text-white">
+    <SlideInOnScroll direction="left" className="md:w-1/2 text-center md:text-left">
+      <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-4">MediPredict</h1>
+      <p className="text-sm sm:text-base max-w-md mb-6">
+        Our team of experienced doctors and healthcare professionals are committed to providing quality care and personalized attention to our patients.
+      </p>
 
-            {/* Search Input */}
-            <div className="mt-8 flex flex-col md:flex-row items-center md:items-stretch">
-              <label htmlFor="medicalConcern" className="sr-only">
-                Enter your medical concern
-              </label>
-              <input
-                id="medicalConcern"
-                type="text"
-                placeholder="Enter your medical concern"
-                value={medicalConcern}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                className="w-full md:w-2/3 px-4 py-3 rounded-md border border-gray-300 text-white
+      {/* Search Input */}
+      <div className="mt-8 flex flex-col md:flex-row items-center md:items-stretch">
+        <label htmlFor="medicalConcern" className="sr-only">
+          Enter your medical concern
+        </label>
+        <input
+          id="medicalConcern"
+          type="text"
+          placeholder="Enter your medical concern"
+          value={medicalConcern}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          className="w-full md:w-2/3 px-4 py-3 rounded-md border border-gray-300 text-white
                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
                      transition transform duration-300
                      focus:animate-pulse"
-              />
-              <button
-                onClick={() => checkAccess(handleFindDoctor)}
-                className="mt-4 md:mt-0 md:ml-4 text-white px-6 py-3 border border-gray-300 rounded-md font-medium
+        />
+        <button
+          onClick={() => checkAccess(handleFindDoctor)}
+          className="mt-4 md:mt-0 md:ml-4 text-white px-6 py-3 border border-gray-300 rounded-md font-medium
                      hover:bg-blue-700 hover:scale-105 transition-transform duration-300"
-              >
-                Find Doctor
-              </button>
-            </div>
-            {error && <p className="text-red-500 mt-2">{error}</p>}
-          </SlideInOnScroll>
-
-          <SlideInOnScroll direction="right" className="absolute top-6 right-6 bg-white/60 backdrop-blur-md text-sm text-gray-800 px-4 py-2 rounded-full flex items-center shadow-lg space-x-3">
-            <div className="flex -space-x-2">
-              <img
-                src="https://media.istockphoto.com/id/481073846/photo/the-long-hard-road-to-recovery.jpg?s=612x612&w=0&k=20&c=8SK7QeWO9VZpy3ei3eBKLKLdcWpgLOOikyByYdrzkwU="
-                className="w-9 h-9 rounded-full border-2 border-white"
-                alt="avatar1"
-              />
-              <img
-                src="https://thumbs.dreamstime.com/b/asian-patient-boy-saline-intravenous-iv-hospital-bed-32632968.jpg"
-                className="w-9 h-9 rounded-full border-2 border-white"
-                alt="avatar2"
-              />
-              <img
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqLkiN_Qk7LiF8RpjDgfN2JoI1RXI8_obXKA&s"
-                className="w-9 h-9 rounded-full border-2 border-white"
-                alt="avatar3"
-              />
-            </div>
-
-            <div className="flex flex-col justify-center leading-tight">
-              <span className="font-bold text-blue-700 text-base">150K+</span>
-              <span className="text-gray-600 text-xs -mt-1">Patient Recover</span>
-            </div>
-
-            <div className="absolute top-0 right-1 w-6 h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-xs shadow">
-              ✓
-            </div>
-          </SlideInOnScroll>
-        </div>
-
-        <div className="absolute left-1/2 bottom-0 right-0 transform backdrop-blur-md bg-white/60 rounded-tl-lg shadow-lg grid grid-cols-2 sm:grid-cols-4 gap-6 text-center px-8 py-5 w-[90%] sm:w-auto">
-          <SlideInOnScroll direction="left">
-            <div>
-              <h3 className="text-2xl font-bold text-blue-700">20+</h3>
-              <p className="text-gray-700 text-sm">years of experience</p>
-            </div>
-          </SlideInOnScroll>
-          <SlideInOnScroll direction="right">
-            <div>
-              <h3 className="text-2xl font-bold text-blue-700">95%</h3>
-              <p className="text-gray-700 text-sm">patient satisfaction rating</p>
-            </div>
-          </SlideInOnScroll>
-          <SlideInOnScroll direction="left">
-            <div>
-              <h3 className="text-2xl font-bold text-blue-700">5,000+</h3>
-              <p className="text-gray-700 text-sm">patients served annually</p>
-            </div>
-          </SlideInOnScroll>
-          <SlideInOnScroll direction="right">
-            <div>
-              <h3 className="text-2xl font-bold text-blue-700">10+</h3>
-              <p className="text-gray-700 text-sm">healthcare providers on staff</p>
-            </div>
-          </SlideInOnScroll>
-        </div>
+        >
+          Find Doctor
+        </button>
       </div>
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+    </SlideInOnScroll>
+
+    <SlideInOnScroll
+  direction="right"
+  className="absolute top-6 right-6 bg-white/60 backdrop-blur-md text-sm text-gray-800 px-2 py-1 rounded-full flex items-center shadow-lg space-x-2 sm:px-4 sm:py-2 sm:space-x-3 scale-90 sm:scale-100"
+>
+  <div className="flex -space-x-2">
+    <img
+      src="https://media.istockphoto.com/id/481073846/photo/the-long-hard-road-to-recovery.jpg?s=612x612&w=0&k=20&c=8SK7QeWO9VZpy3ei3eBKLKLdcWpgLOOikyByYdrzkwU="
+      className="w-6 h-6 sm:w-9 sm:h-9 rounded-full border-2 border-white"
+      alt="avatar1"
+    />
+    <img
+      src="https://thumbs.dreamstime.com/b/asian-patient-boy-saline-intravenous-iv-hospital-bed-32632968.jpg"
+      className="w-6 h-6 sm:w-9 sm:h-9 rounded-full border-2 border-white"
+      alt="avatar2"
+    />
+    <img
+      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQqLkiN_Qk7LiF8RpjDgfN2JoI1RXI8_obXKA&s"
+      className="w-6 h-6 sm:w-9 sm:h-9 rounded-full border-2 border-white"
+      alt="avatar3"
+    />
+  </div>
+
+  <div className="flex flex-col justify-center leading-tight ml-1">
+    <span className="font-bold text-blue-700 text-xs sm:text-base">150K+</span>
+    <span className="text-gray-600 text-[10px] sm:text-xs -mt-1">Patient Recover</span>
+  </div>
+
+  <div className="absolute top-0 right-1 w-5 h-5 sm:w-6 sm:h-6 bg-blue-800 text-white rounded-full flex items-center justify-center text-xs shadow">
+    ✓
+  </div>
+</SlideInOnScroll>
+
+  </div>
+
+  {/* Hidden on mobile, shown on sm+ */}
+  <div
+    className="absolute left-1/2 bottom-0 right-0 transform backdrop-blur-md bg-white/60 rounded-tl-lg shadow-lg grid grid-cols-2 sm:grid-cols-4 gap-6 text-center px-8 py-5 w-[90%] sm:w-auto hidden sm:grid"
+  >
+    <SlideInOnScroll direction="left">
+      <div>
+        <h3 className="text-2xl font-bold text-blue-700">20+</h3>
+        <p className="text-gray-700 text-sm">years of experience</p>
+      </div>
+    </SlideInOnScroll>
+    <SlideInOnScroll direction="right">
+      <div>
+        <h3 className="text-2xl font-bold text-blue-700">95%</h3>
+        <p className="text-gray-700 text-sm">patient satisfaction rating</p>
+      </div>
+    </SlideInOnScroll>
+    <SlideInOnScroll direction="left">
+      <div>
+        <h3 className="text-2xl font-bold text-blue-700">5,000+</h3>
+        <p className="text-gray-700 text-sm">patients served annually</p>
+      </div>
+    </SlideInOnScroll>
+    <SlideInOnScroll direction="right">
+      <div>
+        <h3 className="text-2xl font-bold text-blue-700">10+</h3>
+        <p className="text-gray-700 text-sm">healthcare providers on staff</p>
+      </div>
+    </SlideInOnScroll>
+  </div>
+</div>
+
 
       {/* How It Works Section */}
       <section className="max-w-5xl mx-auto my-16 px-6 sm:px-10 md:px-14">
