@@ -3,7 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AppContext from "./Context/AppContext";
 import Navbar from "./Components/Navbar";
 import Footer from "./Components/Footer";
-import Spinner from "./Components/Spinner";
+import Spinner from "./Components/spinner";
 
 // Pages & Components
 import Dashboard from "./Pages/Patient/Dashboard";
@@ -74,6 +74,8 @@ const App = () => {
     "/blogs",
     "/terms-of-service",
     "/privacy-policy",
+    'Footer',
+    
   ];
 
   const hideNavbarPaths = [
@@ -117,7 +119,6 @@ const App = () => {
     }
   }, [location.pathname]);
 
-  // Only show Spinner if loadingUser or current route is in spinnerRoutes
   if (loadingUser || routeLoading) return <Spinner />;
 
   return (
