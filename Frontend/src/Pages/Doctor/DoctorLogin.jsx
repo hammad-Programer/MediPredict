@@ -4,7 +4,6 @@ import { faEnvelope, faLock, faStethoscope, faPen } from "@fortawesome/free-soli
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import AppContext from "../../Context/AppContext";
-import Spinner from "../../Components/Spinner";
 
 const DoctorLogin = () => {
   
