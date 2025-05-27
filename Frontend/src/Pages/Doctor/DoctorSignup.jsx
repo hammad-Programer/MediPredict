@@ -7,7 +7,7 @@ import {
   faUser, faEnvelope, faLock, faEye, faEyeSlash,
   faStethoscope, faPen
 } from "@fortawesome/free-solid-svg-icons";
-import Spinner from "../../Components/Spinner";
+
 
 const DoctorSignup = () => {
   
