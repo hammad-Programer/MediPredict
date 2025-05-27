@@ -29,7 +29,6 @@ const Navbar = () => {
     ...(user ? [{ name: "Messages", link: "/messages" }] : []),
   ];
 
-  // Auth Button Fragment
   const AuthButtons = ({ mobile = false }) => {
     if (loadingUser) return null;
 
@@ -63,7 +62,7 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-white shadow-md w-full sticky top-0 left-0 z-50">
+    <nav className="bg-white shadow-md w-full fixed top-0 left-0 z-[100]">
       <div className="max-w-[95%] sm:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4">
           {/* Logo */}
@@ -100,7 +99,7 @@ const Navbar = () => {
 
           {/* Mobile Toggle */}
           <button
-            className="md:hidden text-gray-700 p-2"
+            className="md:hidden text-gray-700 p-3"
             onClick={() => setIsOpen(true)}
             aria-label="Open mobile menu"
             aria-expanded={isOpen}
@@ -112,12 +111,12 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`fixed top-0 right-0 w-3/4 sm:w-[280px] h-full bg-white shadow-lg transform ${
+        className={`fixed top-0 right-0 w-4/5 sm:w-[300px] h-full bg-white shadow-lg transform ${
           isOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out z-50`}
+        } transition-transform duration-300 ease-in-out z-[110]`}
       >
         <button
-          className="absolute top-4 right-4 text-gray-700 text-2xl p-2"
+          className="absolute top-4 right-4 text-gray-700 text-2xl p-3"
           onClick={() => setIsOpen(false)}
           aria-label="Close mobile menu"
         >
@@ -138,7 +137,6 @@ const Navbar = () => {
           ))}
         </ul>
 
-        {/* Mobile Auth Button */}
         <div className="px-6 mt-6">
           <AuthButtons mobile />
         </div>

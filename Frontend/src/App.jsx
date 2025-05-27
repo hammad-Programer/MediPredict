@@ -47,7 +47,7 @@ const App = () => {
   const { loadingUser } = useContext(AppContext);
   const [routeLoading, setRouteLoading] = useState(false);
 
-  // Only these routes show the spinner
+  // Routes that show the spinner
   const spinnerRoutes = [
     "/docDashboard",
     "/docDashboard/appointments",
@@ -69,16 +69,15 @@ const App = () => {
     "/doctors",
     "/appointments",
     "/messages",
-    "/messages/:docid", // Add dynamic route to spinnerRoutes
+    "/messages/:docid",
     "/all-blogs",
     "/blogs",
     "/terms-of-service",
     "/privacy-policy",
-    'Footer',
-    
   ];
 
-  const hideNavbarPaths = [
+  // Routes where Navbar and Footer should be hidden
+  const hideNavbarFooterPaths = [
     "/docDashboard",
     "/docDashboard/appointments",
     "/docDashboard/profile",
@@ -87,13 +86,13 @@ const App = () => {
     "/Admin",
     "/admin/doctors",
     "/admin/patients",
+    "/admin/feedbacks",
+    "/admin/announcements",
     "/signup",
     "/login",
     "/doctor-signup",
     "/doctor-login",
     "/admin-login",
-    "/admin/feedbacks",
-    "/admin/announcements",
     "/patient-chat",
     "/docverify-otp",
     "/verify-otp",
@@ -101,30 +100,26 @@ const App = () => {
     "/audio-call",
   ];
 
-  const shouldHideNavbar = hideNavbarPaths.some(path =>
+  const shouldHideNavbarFooter = hideNavbarFooterPaths.some((path) =>
     location.pathname.startsWith(path)
   );
 
   useEffect(() => {
-    const match = spinnerRoutes.some(path =>
+    // Check if the current route is in spinnerRoutes
+    const match = spinnerRoutes.some((path) =>
       location.pathname.startsWith(path)
     );
-
-    if (match) {
-      setRouteLoading(true);
-      const timeout = setTimeout(() => setRouteLoading(false), 500);
-      return () => clearTimeout(timeout);
-    } else {
-      setRouteLoading(false);
-    }
+    setRouteLoading(match);
   }, [location.pathname]);
 
-  if (loadingUser || routeLoading) return <Spinner />;
+  // Show spinner if either loadingUser or routeLoading is true
+  if (loadingUser || routeLoading) {
+    return <Spinner />;
+  }
 
   return (
     <>
-      {!shouldHideNavbar && <Navbar />}
-
+      {!shouldHideNavbarFooter && <Navbar />}
       <Routes>
         {/* Public and Patient Routes */}
         <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -138,7 +133,7 @@ const App = () => {
         <Route path="/doctors" element={<AllDoctor />} />
         <Route path="/appointments" element={<PatientAppointments />} />
         <Route path="/messages" element={<Messages />} />
-        <Route path="/messages/:docid" element={<Messages />} /> {/* Add dynamic route */}
+        <Route path="/messages/:docid" element={<Messages />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
         <Route path="/all-blogs" element={<AllBlogs />} />
@@ -172,8 +167,7 @@ const App = () => {
           <Route path="announcements" element={<Announcements />} />
         </Route>
       </Routes>
-
-      <Footer />
+      {!shouldHideNavbarFooter && <Footer />}
     </>
   );
 };
