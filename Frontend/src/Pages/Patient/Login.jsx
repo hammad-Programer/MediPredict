@@ -4,7 +4,7 @@ import { faEnvelope, faLock, faUser, faPen } from "@fortawesome/free-solid-svg-i
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner"; 
 import AppContext from "../../Context/AppContext";
-import Spinner from "../../Components/Spinner";
+
 
 const Login = () => {
   
